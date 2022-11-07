@@ -1,18 +1,7 @@
-﻿using MlmService.Dto.User;
-
-namespace MlmService.Extensions;
+﻿namespace MlmService.Extensions;
 
 public static class GeneralExtensions
 {
-    public static UserJwtDto GetUserJwt(this HttpContext httpContext)
-    {
-        return new UserJwtDto
-        {
-            Id = httpContext.GetUserId(),
-            TenantId = httpContext.GetTenantId(),
-        };
-    }
-
     public static Guid GetUserId(this HttpContext httpContext)
     {
         var id = httpContext.User.Claims.Single(e => e.Type == "id").Value;

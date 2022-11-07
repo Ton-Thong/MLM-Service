@@ -1,36 +1,28 @@
-﻿using MlmService.Data;
-using MlmService.Options;
-using MlmService.Services.Interface;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using MlmService.Data.Models;
-using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
-using MlmService.Dto.auth;
-using Microsoft.OpenApi.Extensions;
+using Microsoft.EntityFrameworkCore;
+using MlmService.Database.Models;
+using MlmService.Dto.Auth;
+using MlmService.Services.Interface;
+using MlmService.Database;
 using MlmService.Helper;
+using MlmService.Options;
 
 namespace MlmService.Services;
 
 public class AuthService : IAuthService
 {
     private readonly JwtSettings _jwtSettings;
-    private readonly ApplicationDbContext _context;
+    private readonly DatabaseContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IFacebookAuthService _facebookAuthService;
 
-    public AuthService(
-        JwtSettings jwtSettings,
-        ApplicationDbContext context,
-        IFacebookAuthService facebookAuthService,
-        IHttpContextAccessor httpContextAccessor)
+    public AuthService(JwtSettings jwtSettings, DatabaseContext context, IHttpContextAccessor httpContextAccessor)
     {
         _jwtSettings = jwtSettings;
         _context = context;
-        _facebookAuthService = facebookAuthService;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -62,7 +54,7 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
             },
         };
-        
+
         try
         {
             await _context.AddAsync(newUser);
@@ -75,7 +67,6 @@ public class AuthService : IAuthService
                 Error = "Something went wrong"
             };
         }
-       
 
         return await GenerateAuthenticationResultForUserAsync(newUser, true);
     }
@@ -103,7 +94,7 @@ public class AuthService : IAuthService
         return await GenerateAuthenticationResultForUserAsync(user, true);
     }
 
-    public void LogoutAsync()
+    public void Logout()
     {
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("jwt", string.Empty, new CookieOptions
         {
@@ -112,52 +103,6 @@ public class AuthService : IAuthService
             SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddDays(-1),
         });
-
-    }
-
-    public async Task<AuthenticationResult> LoginWithFacebookAsync(string accessToken)
-    {
-        var validatedTokenResult = await _facebookAuthService.ValidateAccessTokenAsync(accessToken);
-        if (!validatedTokenResult.Data.IsValid)
-        {
-            return new AuthenticationResult
-            {
-                Error = "Invalid Facebook token"
-            };
-        }
-
-        var userInfo = await _facebookAuthService.GetUserInfoAsync(accessToken);
-        var user = await _context.Users.FirstOrDefaultAsync(e => e.IsFacebookLogin && !string.IsNullOrEmpty(e.FacebookUserId) && e.FacebookUserId.Equals(validatedTokenResult.Data.UserId));
-
-        if (user == null)
-        {
-            var username = string.IsNullOrEmpty(userInfo.Email) ? userInfo.Firstname + userInfo.Lastname : userInfo.Email;
-            var identityUser = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = username,
-                FacebookUserId = validatedTokenResult.Data.UserId,
-                IsFacebookLogin = true,
-                IsRoot = true,
-            };
-
-            try
-            {
-                await _context.Users.AddAsync(identityUser);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                return new AuthenticationResult
-                {
-                   Error = "Something went wrong"
-                };
-            }
-
-            return await GenerateAuthenticationResultForUserAsync(identityUser, true);
-        }
-
-        return await GenerateAuthenticationResultForUserAsync(user, true);
     }
 
     public async Task<AuthenticationResult> RefreshTokenAsync(string token)
@@ -199,7 +144,7 @@ public class AuthService : IAuthService
         return await GenerateAuthenticationResultForUserAsync(user, true);
     }
 
-    private string GetSalt()
+    private static string GetSalt()
     {
         byte[] saltBytes = new byte[64];
 
@@ -210,17 +155,17 @@ public class AuthService : IAuthService
         return saltText;
     }
 
-    private string HashPassword(string password)
+    private static string HashPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password, 5);
     }
 
-    private bool VerifyPassword(string password, string passwordHash)
+    private static bool VerifyPassword(string password, string passwordHash)
     {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 
-    private ClaimsPrincipal GetPrincipalFromToken(string token, string key)
+    private static ClaimsPrincipal GetPrincipalFromToken(string token, string key)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         try
@@ -249,7 +194,7 @@ public class AuthService : IAuthService
         }
     }
 
-    private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+    private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
     {
         return (validatedToken is JwtSecurityToken jwtSecurityToken)
             && jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
@@ -272,10 +217,10 @@ public class AuthService : IAuthService
                 new Claim("tenantId", user.TenantId.ToString()),
                 new Claim(ClaimTypes.Role, isUser ? AccountHelper.User : AccountHelper.Member)
             }),
+            Expires = DateTime.Now.Add(_jwtSettings.TokenLifetime),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
-        tokenDescriptor.Expires = DateTime.Now.Add(_jwtSettings.TokenLifetime);
-        tokenDescriptor.SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
         tokenDescriptor.Expires = DateTime.Now.AddDays(5);

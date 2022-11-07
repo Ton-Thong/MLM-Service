@@ -1,8 +1,7 @@
 ﻿namespace MlmService.Pagination;
 
-
 public static class Direction
 {
-    public static string Descending = "descend";
-    public static string Ascending = "ascend";
+    public const string Descending = "descend";
+    public const string Ascending = "ascend";
 }

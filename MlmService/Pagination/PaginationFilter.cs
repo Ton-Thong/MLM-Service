@@ -1,5 +1,4 @@
-﻿using MlmService.Exceptions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace MlmService.Pagination;
 

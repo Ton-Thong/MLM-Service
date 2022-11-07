@@ -22,11 +22,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> GetUserInfo()
     {
         var user = await _userService.GetUserInfo(HttpContext.GetUserId());
-        if (user == null)
-            return NoContent();
-
-
         return Ok(user);
     }
-
 }

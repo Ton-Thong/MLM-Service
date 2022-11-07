@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MlmService.Data;
-using MlmService.Middleware;
-using MlmService.Options;
+using MlmService.Database;
 using MlmService.Services;
 using MlmService.Services.Interface;
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 using System.Text;
+using MlmService.Middleware;
+using MlmService.Options;
+using MlmService.Repository.Interface;
+using MlmService.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,18 +45,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+builder.Services.AddDbContextPool<DatabaseContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-builder.Services.AddScoped<IFacebookAuthService, FacebookAuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -114,9 +115,7 @@ builder.Services.AddSwaggerGenNewtonsoftSupport();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
-{
-    builder.SetIsOriginAllowed(origin => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-}));
+    builder.SetIsOriginAllowed((_) => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
 
 var app = builder.Build();
 

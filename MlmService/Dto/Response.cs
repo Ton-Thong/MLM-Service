@@ -18,3 +18,18 @@ public class Response<T>
     public string[]? Errors { get; set; }
     public string? Message { get; set; }
 }
+
+public class Response
+{
+    public Response()
+    {
+        Succeeded = true;
+        Message = string.Empty;
+        Errors = null;
+    }
+
+    public bool Succeeded { get; set; }
+
+    public string[]? Errors { get; set; }
+    public string? Message { get; set; }
+}

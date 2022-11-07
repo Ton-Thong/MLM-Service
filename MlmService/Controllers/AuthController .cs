@@ -1,12 +1,6 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using MlmService.Contracts;
-using MlmService.Dto.auth;
 using MlmService.Dto.Auth;
-using MlmService.Dto.Authentication.Facebook;
-using MlmService.Extensions;
+using MlmService.Services.Interface;
 
 namespace MlmService.Controllers;
 
@@ -41,8 +35,9 @@ public class AuthController : ControllerBase
             });
         }
 
-        return Ok(new AuthSuccessResponse
+        return Ok(new AuthenticationResult
         {
+            Success = true,
             Token = authResponse.Token,
         });
     }
@@ -59,27 +54,9 @@ public class AuthController : ControllerBase
             });
         }
 
-        return Ok(new AuthSuccessResponse
-        {
-            Username = request.Username,
-            Token = authResponse.Token,
-        });
-    }
-
-    [HttpPost("facebooklogin")]
-    public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginRequest request)
-    {
-        var authResponse = await _authService.LoginWithFacebookAsync(request.AccessToken);
-        if (!authResponse.Success)
-        {
-            return BadRequest(new FailedResponse
-            {
-                Error = authResponse.Error
-            });
-        }
-
         return Ok(new AuthenticationResult
         {
+            Success = true,
             Token = authResponse.Token,
         });
     }
@@ -89,7 +66,7 @@ public class AuthController : ControllerBase
     {
         if (!Request.Cookies.ContainsKey("jwt"))
         {
-            return BadRequest(new FailedResponse
+            return BadRequest(new AuthFailedResponse
             {
                 Error = "Some Error Occured"
             });
@@ -98,7 +75,7 @@ public class AuthController : ControllerBase
         var authResponse = await _authService.RefreshTokenAsync(Request.Cookies["jwt"] ?? string.Empty);
         if (!authResponse.Success)
         {
-            return BadRequest(new FailedResponse
+            return BadRequest(new AuthFailedResponse
             {
                 Error = authResponse.Error
             });
@@ -106,6 +83,7 @@ public class AuthController : ControllerBase
 
         return Ok(new AuthenticationResult
         {
+            Success = true,
             Token = authResponse.Token,
         });
     }
@@ -113,8 +91,7 @@ public class AuthController : ControllerBase
     [HttpGet("logout")]
     public IActionResult Logout()
     {
-
-        _authService.LogoutAsync();
+        _authService.Logout();
         return Ok();
     }
 }

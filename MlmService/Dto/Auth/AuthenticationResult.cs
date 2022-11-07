@@ -1,4 +1,4 @@
-namespace MlmService.Dto.auth;
+namespace MlmService.Dto.Auth;
 
 public class AuthenticationResult
 {
