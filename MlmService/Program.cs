@@ -8,6 +8,7 @@ using MlmService.Services.Interface;
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 using System.Text;
+using MlmService.Api;
 using MlmService.Middleware;
 using MlmService.Options;
 using MlmService.Repository.Interface;
@@ -45,8 +46,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddDbContextPool<DatabaseContext>(options =>
+builder.Services.AddDbContextPool<CoreContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<SharedContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("SupportConnection")));
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -57,7 +61,6 @@ builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services
@@ -111,8 +114,8 @@ builder.Services.AddSwaggerGen(e =>
 });
 
 builder.Services.AddSwaggerGenNewtonsoftSupport();
-
 builder.Services.AddHealthChecks();
+builder.Services.AddOutputCache();
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
     builder.SetIsOriginAllowed((_) => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
@@ -132,16 +135,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
-
 app.UseCors("corsapp");
-
 app.UseMiddleware<ErrorHandling>();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapAuthRoutes();
+app.MapSupportRoutes();
 
 app.Run();

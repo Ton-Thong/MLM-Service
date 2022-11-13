@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MlmService.Database;
-using MlmService.Database.Models;
+using MlmService.Database.CoreModels;
 using MlmService.Services.Interface;
 using MlmService.Pagination;
 using MlmService.Pagination.Filter;
@@ -12,14 +12,14 @@ namespace MlmService.Services;
 
 public class PackageService : IPackageService
 {
-    private readonly DatabaseContext _context;
+    private readonly CoreContext _context;
 
-    public PackageService(DatabaseContext context)
+    public PackageService(CoreContext context)
     {
         _context = context;
     }
 
-    public async Task<PagedResponse<List<PackageDto>>> GetMembershipsAsync(PaginationFilter paged, FilterMembership filter ,Guid tenantId)
+    public async Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(PaginationFilter paged, FilterPackage filter ,Guid tenantId)
     {
         if (paged.PageSize > 100)
             throw new PagedException("pagesize cannot more than 100.");
@@ -161,8 +161,10 @@ public class PackageService : IPackageService
             totalRecords);
     }
 
-    public Task<List<PackageForDropdownDto>> GetPackageFoDropdownAsync(Guid tenantId)
+    public Task<List<PackageForDropdownDto>> GetPackageForDropdownAsync(Guid tenantId)
     {
+
+
         return _context.Packages
             .AsNoTracking()
             .Where(e => e.TenantId == tenantId && e.Active)
@@ -173,7 +175,7 @@ public class PackageService : IPackageService
             }).ToListAsync();
     }
 
-    public async Task<Response<Guid>> CreateMembershipAsync(PackageDto m, Guid tenantId)
+    public async Task<Response<Guid>> CreatePackageAsync(PackageDto m, Guid tenantId)
     {
         var memberShip = new Package(m.Code, m.Name, m.Amount, m.Pv, tenantId);
         await _context.AddAsync(memberShip);
@@ -186,7 +188,7 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<Response<Guid>> UpdateMembershipAsync(PackageDto m, Guid tenantId)
+    public async Task<Response<Guid>> UpdatePackageAsync(PackageDto m, Guid tenantId)
     {
         var membership = await _context.Packages.FirstOrDefaultAsync(e => e.Id == m.Id && e.TenantId == tenantId && !e.Deleted);
         if (membership == null)
@@ -212,7 +214,7 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<Response<Guid>> DeleteMembershipAsync(Guid id, Guid tenantId)
+    public async Task<Response<Guid>> DeletePackageAsync(Guid id, Guid tenantId)
     {
         var membership = await _context.Packages.FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId && !e.Deleted);
         if(membership == null)

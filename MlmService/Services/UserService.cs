@@ -7,9 +7,9 @@ namespace MlmService.Services;
 
 public class UserService : IUserService
 {
-    private readonly DatabaseContext _context;
+    private readonly CoreContext _context;
 
-    public UserService(DatabaseContext context)
+    public UserService(CoreContext context)
     {
         _context = context;
     }
@@ -21,6 +21,7 @@ public class UserService : IUserService
             {
                 Id = e.Id,
                 Username = e.Username,
+                TenantId = e.TenantId,
             }).FirstOrDefaultAsync(e => e.Id == userId);
     }
 }

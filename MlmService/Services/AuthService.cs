@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
-using MlmService.Database.Models;
+using MlmService.Database.CoreModels;
 using MlmService.Dto.Auth;
 using MlmService.Services.Interface;
 using MlmService.Database;
@@ -16,10 +16,10 @@ namespace MlmService.Services;
 public class AuthService : IAuthService
 {
     private readonly JwtSettings _jwtSettings;
-    private readonly DatabaseContext _context;
+    private readonly CoreContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthService(JwtSettings jwtSettings, DatabaseContext context, IHttpContextAccessor httpContextAccessor)
+    public AuthService(JwtSettings jwtSettings, CoreContext context, IHttpContextAccessor httpContextAccessor)
     {
         _jwtSettings = jwtSettings;
         _context = context;

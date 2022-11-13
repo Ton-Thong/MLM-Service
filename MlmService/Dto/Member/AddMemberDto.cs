@@ -27,4 +27,20 @@ public class AddMemberDto
     public string Line { get; set; }
     [JsonProperty("facebook")]
     public string Facebook { get; set; }
+    [JsonProperty("address")]
+    public string Address { get; set; }
+    [JsonProperty("provinceId")]
+    public int ProvinceId { get; set; }
+    [JsonProperty("province")]
+    public string Province { get; set; }
+    [JsonProperty("amphureId")]
+    public int AmphureId { get; set; }
+    [JsonProperty("amphure")]
+    public string Amphure { get; set; }
+    [JsonProperty("districtId")]
+    public int DistrictId { get; set; }
+    [JsonProperty("district")]
+    public string District { get; set; }
+    [JsonProperty("zipcode")]
+    public int Zipcode { get; set; }
 }

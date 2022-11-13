@@ -26,11 +26,11 @@ public class PackageController : ControllerBase
 
     [HttpPost("list")]
     [ProducesResponseType(typeof(PagedResponse<List<PackageDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMemberShips([FromQuery] PaginationFilter paged, [FromBody] FilterMembership filter)
+    public async Task<IActionResult> GetPackages([FromQuery] PaginationFilter paged, [FromBody] FilterPackage filter)
     {
         try
         {
-            var result = await _packageService.GetMembershipsAsync(paged, filter, HttpContext.GetTenantId());
+            var result = await _packageService.GetPackagesAsync(paged, filter, HttpContext.GetTenantId());
             return Ok(result);
         }
         catch(PagedException ex)
@@ -43,23 +43,23 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(List<PackageForDropdownDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPackageForDropdown()
     {
-        var result = await _packageService.GetPackageFoDropdownAsync(HttpContext.GetTenantId());
+        var result = await _packageService.GetPackageForDropdownAsync(HttpContext.GetTenantId());
         return Ok(result);
     }
 
     [HttpPut]
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateMembership([FromBody] PackageDto input)
+    public async Task<IActionResult> UpdatePackage([FromBody] PackageDto input)
     {
-        var result = await _packageService.UpdateMembershipAsync(input, HttpContext.GetTenantId());
+        var result = await _packageService.UpdatePackageAsync(input, HttpContext.GetTenantId());
         return Ok(result);
     }
 
     [HttpPost]
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateMembership([FromBody] PackageDto input)
+    public async Task<IActionResult> CreatePackage([FromBody] PackageDto input)
     {
-        var result = await _packageService.CreateMembershipAsync(input, HttpContext.GetTenantId());
+        var result = await _packageService.CreatePackageAsync(input, HttpContext.GetTenantId());
         return Created(string.Empty, result);
     }
 
@@ -67,7 +67,7 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeletePackage([FromQuery] Guid id)
     {
-        var result = await _packageService.DeleteMembershipAsync(id, HttpContext.GetTenantId());
+        var result = await _packageService.DeletePackageAsync(id, HttpContext.GetTenantId());
         return Ok(result);
     }
 }
