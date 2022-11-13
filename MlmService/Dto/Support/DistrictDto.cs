@@ -8,4 +8,6 @@ public class DistrictDto
     public int Id { get; set; }
     [JsonProperty("name")]
     public string Name { get; set; }
+    [JsonProperty("amphureId")]
+    public int AmphureId { get; set; }
 }
