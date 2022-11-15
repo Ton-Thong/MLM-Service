@@ -13,6 +13,7 @@ using MlmService.Middleware;
 using MlmService.Options;
 using MlmService.Repository.Interface;
 using MlmService.Repository;
+using MlmService.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,8 +118,8 @@ builder.Services.AddSwaggerGenNewtonsoftSupport();
 builder.Services.AddHealthChecks();
 builder.Services.AddOutputCache();
 
-builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
-    builder.SetIsOriginAllowed((_) => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
+builder.Services.AddCors(p => p.AddPolicy("corsapp", e =>
+    e.SetIsOriginAllowed((_) => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
 
 var app = builder.Build();
 
@@ -143,8 +144,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapAuthRoutes();
-app.MapSupportRoutes();
+app.MapEndpoints(Assembly.GetExecutingAssembly());
 
 app.Run();

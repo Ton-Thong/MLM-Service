@@ -1,82 +1,84 @@
-﻿using MlmService.Dto.Auth;
+﻿using MlmService.Routing;
+using MlmService.Dto.Auth;
 using MlmService.Services.Interface;
 
 namespace MlmService.Api;
 
-public static class AuthApi
+public class AuthApi : IEndpointRouteHandler
 {
-    public static void MapAuthRoutes(this IEndpointRouteBuilder app)
+    public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        var auth = app.MapGroup("/api/auth")
-            .WithTags("Auth")
-            .AllowAnonymous();
-
-        auth.MapPost("/register", async (UserRegistrationRequest request, IAuthService authService) =>
+        var auth = app.MapGroup("/api/auth/").WithTags("Auth");
+        auth.MapPost("register", Register);
+        auth.MapPost("login", Login);
+        auth.MapGet("refresh", Refresh);
+        auth.MapGet("logout", Logout);
+    }
+    
+    private static async Task<IResult> Register(UserLoginRequest request, IAuthService authService) {
+        var response = await authService.RegisterAsync(request.Username, request.Password);
+        if (!response.Success)
         {
-            var response = await authService.RegisterAsync(request.Username, request.Password);
-            if (!response.Success)
+            return Results.BadRequest(new AuthFailedResponse
             {
-                return Results.BadRequest(new AuthFailedResponse
-                {
-                    Error = response.Error
-                });
-            }
-
-            return Results.Ok(new AuthenticationResult
-            {
-                Success = true,
-                Token = response.Token,
+                Error = response.Error
             });
-        });
+        }
 
-        auth.MapPost("/login", async (UserLoginRequest request, IAuthService authService) =>
+        return Results.Ok(new AuthenticationResult
         {
-            var response = await authService.LoginAsync(request.Username, request.Password);
-            if (!response.Success)
+            Success = true,
+            Token = response.Token,
+        });
+    }
+
+    private static async Task<IResult> Login(UserLoginRequest request, IAuthService authService)
+    {
+        var response = await authService.LoginAsync(request.Username, request.Password);
+        if (!response.Success)
+        {
+            return Results.Ok(new AuthFailedResponse
             {
-                return Results.Ok(new AuthFailedResponse
-                {
-                    Error = response.Error
-                });
-            }
+                Error = response.Error
+            });
+        }
             
-            return Results.Ok(new AuthenticationResult
-            {
-                Success = true,
-                Token = response.Token,
-            });
-        });
-
-        auth.MapGet("/refresh", async (HttpContext context, IAuthService authService) =>
+        return Results.Ok(new AuthenticationResult
         {
-            if (!context.Request.Cookies.ContainsKey("jwt"))
-            {
-                return Results.BadRequest(new AuthFailedResponse
-                {
-                    Error = "Some Error Occured"
-                });
-            }
+            Success = true,
+            Token = response.Token,
+        });
+    }
 
-            var response = await authService.RefreshTokenAsync(context.Request.Cookies["jwt"] ?? string.Empty);
-            if (!response.Success)
+    private static async Task<IResult> Refresh(HttpContext context, IAuthService authService)
+    {
+        if (!context.Request.Cookies.ContainsKey("jwt"))
+        {
+            return Results.BadRequest(new AuthFailedResponse
             {
-                return Results.BadRequest(new AuthFailedResponse
-                {
-                    Error = response.Error
-                });
-            }
+                Error = "Some Error Occured"
+            });
+        }
+
+        var response = await authService.RefreshTokenAsync(context.Request.Cookies["jwt"] ?? string.Empty);
+        if (!response.Success)
+        {
+            return Results.BadRequest(new AuthFailedResponse
+            {
+                Error = response.Error
+            });
+        }
             
-            return Results.Ok(new AuthenticationResult
-            {
-                Success = true,
-                Token = response.Token,
-            });
-        });
-
-        auth.MapGet("logout", (IAuthService authService) =>
+        return Results.Ok(new AuthenticationResult
         {
-            authService.Logout();
-            return Results.Ok();
+            Success = true,
+            Token = response.Token,
         });
+    }
+
+    private static IResult Logout(IAuthService authService)
+    {
+        authService.Logout();
+        return Results.Ok();
     }
 }

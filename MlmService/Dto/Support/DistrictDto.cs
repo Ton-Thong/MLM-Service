@@ -10,4 +10,6 @@ public class DistrictDto
     public string Name { get; set; }
     [JsonProperty("amphureId")]
     public int AmphureId { get; set; }
+    [JsonProperty("zipcode")]
+    public int Zipcode { get; set; }
 }

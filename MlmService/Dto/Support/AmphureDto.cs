@@ -8,6 +8,4 @@ public class AmphureDto
     public int Id { get; set; }
     [JsonProperty("name")]
     public string Name { get; set; }
-    [JsonProperty("provinceId")]
-    public int ProvinceId { get; set; }
 }

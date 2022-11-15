@@ -6,7 +6,7 @@ namespace MlmService.Database.CoreModels;
 public sealed class Member : BaseModel
 {
     public Member(
-        string code, Prefix prefix, Gender gender, string firstname, string lastname, DateOnly dateOfBirth, Nationality nationality, string idcard, string phone, string email, string line, string facebook, 
+        string code, Prefix prefix, Gender gender, string name, DateOnly dateOfBirth, string phone, string email, string line, string facebook, 
         int? provinceId, string province, int? amphureId, string amphure, int? districtId, string district, string address, int? zipcode,
         Guid tenantId)
     {
@@ -14,11 +14,8 @@ public sealed class Member : BaseModel
         Code = code;
         Prefix = prefix;
         Gender = gender;
-        Firstname = firstname;
-        Lastname = lastname;
+        Name = name;
         DateOfBirth = dateOfBirth;
-        Nationality = nationality;
-        Idcard = idcard;
         Phone = phone;
         Email = email;
         Line = line;
@@ -31,6 +28,7 @@ public sealed class Member : BaseModel
         District = district;
         Address = address;
         Zipcode = zipcode;
+        Approved = false;
         TenantId = tenantId;
         CreatedDate = DateTime.UtcNow;
         UpdatedDate = DateTime.UtcNow;
@@ -49,11 +47,8 @@ public sealed class Member : BaseModel
     public string Code { get; set; }
     public Prefix Prefix { get; set; }
     public Gender Gender { get; set; }
-    public string Firstname { get; set; }
-    public string Lastname { get; set; }
+    public string Name { get; set; }
     public DateOnly DateOfBirth { get; set; }
-    public Nationality Nationality { get; set; }
-    public string Idcard { get; set; }
     public string Phone { get; set; }
     public string Email { get; set; }
     public string Line { get; set; }

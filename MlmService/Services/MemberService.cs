@@ -1,4 +1,5 @@
-﻿using MlmService.Database.CoreModels;
+﻿using MlmService.Database.Consts;
+using MlmService.Database.CoreModels;
 using MlmService.Dto;
 using MlmService.Dto.Member;
 using MlmService.Repository.Interface;
@@ -18,23 +19,20 @@ public class MemberService : IMemberService
     {
         var member = new Member(
             code: Guid.NewGuid().ToString()[..6],
-            prefix: m.Prefix,
-            gender: m.Gender,
-            firstname: m.Firstname,
-            lastname: m.Lastname,
+            prefix: (Prefix)Convert.ToInt64(m.Prefix),
+            gender: (Gender)Convert.ToInt64(m.Gender),
+            name: m.Name,
             dateOfBirth: m.DateOfBirth,
-            nationality: m.Nationality,
-            idcard: m.Idcard,
             phone: m.Phone,
             email: m.Email,
             line: m.Line,
             facebook: m.Facebook,
             provinceId: m.ProvinceId,
-            province: m.Province,
+            province: string.Empty,
             amphureId: m.AmphureId,
-            amphure: m.Amphure,
+            amphure: string.Empty,
             districtId: m.DistrictId,
-            district: m.District,
+            district: string.Empty,
             address: m.Address,
             zipcode: m.Zipcode,
             tenantId: tenantId
