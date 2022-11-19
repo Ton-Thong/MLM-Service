@@ -1,32 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MlmService.Database;
-using MlmService.Database.CoreModels;
-using MlmService.Services.Interface;
+using MlmService.Database.Models.Core;
 using MlmService.Pagination;
 using MlmService.Pagination.Filter;
 using MlmService.Dto;
 using MlmService.Exceptions;
 using MlmService.Dto.Package;
+using MlmService.Contracts;
 
 namespace MlmService.Services;
 
 public class PackageService : IPackageService
 {
-    private readonly CoreContext _context;
+    private readonly TenantContext _tenantContext;
 
-    public PackageService(CoreContext context)
+    public PackageService(TenantContext tenantContext)
     {
-        _context = context;
+        _tenantContext = tenantContext;
     }
 
-    public async Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(PaginationFilter paged, FilterPackage filter ,Guid tenantId)
+    public async Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(PaginationFilter paged, FilterPackage filter)
     {
         if (paged.PageSize > 100)
             throw new PagedException("pagesize cannot more than 100.");
 
-        var membershipQuery = _context.Packages
-            .AsNoTracking()
-            .Where(e => e.TenantId == tenantId && !e.Deleted);
+        var membershipQuery = _tenantContext.Packages.AsNoTracking().Where(e => !e.Deleted);
 
         //Search
         if(!string.IsNullOrWhiteSpace(filter.SearchName))
@@ -161,13 +159,12 @@ public class PackageService : IPackageService
             totalRecords);
     }
 
-    public Task<List<PackageForDropdownDto>> GetPackageForDropdownAsync(Guid tenantId)
+    public Task<List<PackageForDropdownDto>> GetPackageForDropdownAsync()
     {
 
 
-        return _context.Packages
+        return _tenantContext.Packages
             .AsNoTracking()
-            .Where(e => e.TenantId == tenantId && e.Active)
             .Select(e => new PackageForDropdownDto
             {
                 Id = e.Id,
@@ -175,11 +172,11 @@ public class PackageService : IPackageService
             }).ToListAsync();
     }
 
-    public async Task<Response<Guid>> CreatePackageAsync(PackageDto m, Guid tenantId)
+    public async Task<Response<Guid>> CreatePackageAsync(PackageDto m)
     {
-        var memberShip = new Package(m.Code, m.Name, m.Amount, m.Pv, tenantId);
-        await _context.AddAsync(memberShip);
-        await _context.SaveChangesAsync();
+        var memberShip = new Package(m.Code, m.Name, m.Amount, m.Pv);
+        await _tenantContext.AddAsync(memberShip);
+        await _tenantContext.SaveChangesAsync();
 
         return new Response<Guid>
         {
@@ -188,9 +185,9 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<Response<Guid>> UpdatePackageAsync(PackageDto m, Guid tenantId)
+    public async Task<Response<Guid>> UpdatePackageAsync(PackageDto m)
     {
-        var membership = await _context.Packages.FirstOrDefaultAsync(e => e.Id == m.Id && e.TenantId == tenantId && !e.Deleted);
+        var membership = await _tenantContext.Packages.FindAsync(m.Id);
         if (membership == null)
         {
             return new Response<Guid>
@@ -206,7 +203,7 @@ public class PackageService : IPackageService
         membership.Pv = m.Pv;
         membership.Active = m.Status == "Active";
 
-        await _context.SaveChangesAsync();
+        await _tenantContext.SaveChangesAsync();
 
         return new Response<Guid>
         {
@@ -214,9 +211,9 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<Response<Guid>> DeletePackageAsync(Guid id, Guid tenantId)
+    public async Task<Response<Guid>> DeletePackageAsync(Guid id)
     {
-        var membership = await _context.Packages.FirstOrDefaultAsync(e => e.Id == id && e.TenantId == tenantId && !e.Deleted);
+        var membership = await _tenantContext.Packages.FindAsync(id);
         if(membership == null)
         {
             return new Response<Guid>
@@ -227,7 +224,7 @@ public class PackageService : IPackageService
         }
 
         membership.Deleted = true;
-        await _context.SaveChangesAsync();
+        await _tenantContext.SaveChangesAsync();
 
         return new Response<Guid>
         {

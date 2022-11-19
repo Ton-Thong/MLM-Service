@@ -1,6 +1,6 @@
 ﻿using MlmService.Routing;
 using MlmService.Dto.Auth;
-using MlmService.Services.Interface;
+using MlmService.Contracts;
 
 namespace MlmService.Api;
 

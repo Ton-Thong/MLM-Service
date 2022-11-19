@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MlmService.Contracts;
 using MlmService.Extensions;
-using MlmService.Services.Interface;
 
 namespace MlmService.Controllers;
 

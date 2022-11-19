@@ -1,4 +1,4 @@
-using MlmService.Database.CoreModels;
+using MlmService.Database.Models.Core;
 using MlmService.Dto.Member;
 
 namespace MlmService.Repository.Interface;

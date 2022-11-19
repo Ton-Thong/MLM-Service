@@ -4,12 +4,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
-using MlmService.Database.CoreModels;
 using MlmService.Dto.Auth;
-using MlmService.Services.Interface;
 using MlmService.Database;
 using MlmService.Helper;
 using MlmService.Options;
+using MlmService.Database.Models.Core;
+using MlmService.Contracts;
 
 namespace MlmService.Services;
 
@@ -17,12 +17,24 @@ public class AuthService : IAuthService
 {
     private readonly JwtSettings _jwtSettings;
     private readonly CoreContext _context;
+    private readonly TenantContext _tenantContext;
+    private readonly ITenantService _tenantService;
+    private readonly DbSettings _dbSettings;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthService(JwtSettings jwtSettings, CoreContext context, IHttpContextAccessor httpContextAccessor)
+    public AuthService(
+        JwtSettings jwtSettings, 
+        CoreContext context, 
+        TenantContext tenantContext,
+        ITenantService tenantService,
+        DbSettings dbSettings, 
+        IHttpContextAccessor httpContextAccessor)
     {
         _jwtSettings = jwtSettings;
         _context = context;
+        _tenantContext = tenantContext;
+        _tenantService = tenantService;
+        _dbSettings = dbSettings;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -67,6 +79,9 @@ public class AuthService : IAuthService
                 Error = "Something went wrong"
             };
         }
+
+        _tenantService.SetConnectionString(_dbSettings.BaseConnection + username);
+        await _tenantContext.Database.MigrateAsync();
 
         return await GenerateAuthenticationResultForUserAsync(newUser, true);
     }
@@ -215,6 +230,7 @@ public class AuthService : IAuthService
                 new Claim(JwtRegisteredClaimNames.Email, user.Username),
                 new Claim("id", user.Id.ToString()),
                 new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("user", user.Username),
                 new Claim(ClaimTypes.Role, isUser ? AccountHelper.User : AccountHelper.Member)
             }),
             Expires = DateTime.Now.Add(_jwtSettings.TokenLifetime),

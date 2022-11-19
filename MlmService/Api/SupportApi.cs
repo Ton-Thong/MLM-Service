@@ -22,9 +22,9 @@ public class SupportApi : IEndpointRouteHandler
         support.MapGet("districts", GetDistricts).Produces<DistrictDto>();
     }
 
-    private static async Task<IResult> GetProvinces(SharedContext sharedContext)
+    private static async Task<IResult> GetProvinces(CoreContext coreContext)
     {
-        var provinces = await sharedContext.Provinces
+        var provinces = await coreContext.Provinces
             .Select(e => new ProvinceDto
             {
                 Id = e.Id,
@@ -34,14 +34,14 @@ public class SupportApi : IEndpointRouteHandler
         return Results.Ok(provinces);
     }
 
-    private static async Task<IResult> GetAmphures(int provinceId, SharedContext sharedContext)
+    private static async Task<IResult> GetAmphures(int provinceId, CoreContext coreContext)
     {
         if (AmphureCache.ContainsKey(provinceId))
         {
             return Results.Ok(AmphureCache[provinceId]);
         }
 
-        var amphures = await sharedContext.Amphures
+        var amphures = await coreContext.Amphures
             .Where(e => e.ProvinceId == provinceId)
             .Select(e => new AmphureDto
             {
@@ -53,14 +53,14 @@ public class SupportApi : IEndpointRouteHandler
         return Results.Ok(amphures);
     }
 
-    private static async Task<IResult> GetDistricts(int amphureId, SharedContext sharedContext)
+    private static async Task<IResult> GetDistricts(int amphureId, CoreContext coreContext)
     {
         if (DistrictCache.ContainsKey(amphureId))
         {
             return Results.Ok(DistrictCache[amphureId]);
         }
 
-        var districts = await sharedContext.Districts
+        var districts = await coreContext.Districts
             .Where(e => e.AmphureId == amphureId)
             .Select(e => new DistrictDto
             {

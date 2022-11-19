@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MlmService.Database;
 using MlmService.Services;
-using MlmService.Services.Interface;
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 using System.Text;
@@ -14,6 +13,7 @@ using MlmService.Options;
 using MlmService.Repository.Interface;
 using MlmService.Repository;
 using MlmService.Routing;
+using MlmService.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +23,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var jwtSettings = new JwtSettings();
-builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
+builder. Configuration.Bind(nameof(JwtSettings), jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
+
+var dbSettings = new DbSettings();
+builder.Configuration.Bind(nameof(DbSettings), dbSettings);
+builder.Services.AddSingleton(dbSettings);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -47,11 +51,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddDbContextPool<CoreContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContextPool<CoreContext>(options => 
+    options.UseNpgsql(dbSettings.DefaultConnection));
 
-builder.Services.AddDbContext<SharedContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SupportConnection")));
+builder.Services.AddDbContext<TenantContext>(options => 
+    options.UseNpgsql(e => e.MigrationsAssembly(typeof(TenantContext).Assembly.FullName)));
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -60,8 +64,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
-
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.AddScoped<ITenantService, TenantService>();
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services

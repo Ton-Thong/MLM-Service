@@ -7,8 +7,8 @@ using MlmService.Pagination;
 using MlmService.Pagination.Filter;
 using MlmService.Extensions;
 using MlmService.Helper;
-using MlmService.Services.Interface;
 using MlmService.Dto.Package;
+using MlmService.Contracts;
 
 namespace MlmService.Controllers;
 
@@ -30,7 +30,7 @@ public class PackageController : ControllerBase
     {
         try
         {
-            var result = await _packageService.GetPackagesAsync(paged, filter, HttpContext.GetTenantId());
+            var result = await _packageService.GetPackagesAsync(paged, filter);
             return Ok(result);
         }
         catch(PagedException ex)
@@ -43,7 +43,7 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(List<PackageForDropdownDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPackageForDropdown()
     {
-        var result = await _packageService.GetPackageForDropdownAsync(HttpContext.GetTenantId());
+        var result = await _packageService.GetPackageForDropdownAsync();
         return Ok(result);
     }
 
@@ -51,7 +51,7 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdatePackage([FromBody] PackageDto input)
     {
-        var result = await _packageService.UpdatePackageAsync(input, HttpContext.GetTenantId());
+        var result = await _packageService.UpdatePackageAsync(input);
         return Ok(result);
     }
 
@@ -59,7 +59,7 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreatePackage([FromBody] PackageDto input)
     {
-        var result = await _packageService.CreatePackageAsync(input, HttpContext.GetTenantId());
+        var result = await _packageService.CreatePackageAsync(input);
         return Created(string.Empty, result);
     }
 
@@ -67,7 +67,7 @@ public class PackageController : ControllerBase
     [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeletePackage([FromQuery] Guid id)
     {
-        var result = await _packageService.DeletePackageAsync(id, HttpContext.GetTenantId());
+        var result = await _packageService.DeletePackageAsync(id);
         return Ok(result);
     }
 }

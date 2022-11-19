@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MlmService.Contracts;
 using MlmService.Database;
 using MlmService.Dto.User;
-using MlmService.Services.Interface;
 
 namespace MlmService.Services;
 

@@ -1,9 +1,9 @@
-﻿using MlmService.Database.Consts;
-using MlmService.Database.CoreModels;
+﻿using MlmService.Contracts;
+using MlmService.Database.Consts;
+using MlmService.Database.Models.Core;
 using MlmService.Dto;
 using MlmService.Dto.Member;
 using MlmService.Repository.Interface;
-using MlmService.Services.Interface;
 
 namespace MlmService.Services;
 

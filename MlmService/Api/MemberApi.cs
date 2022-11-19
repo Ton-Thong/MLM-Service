@@ -1,7 +1,7 @@
-﻿using MlmService.Dto.Member;
+﻿using MlmService.Contracts;
+using MlmService.Dto.Member;
 using MlmService.Extensions;
 using MlmService.Routing;
-using MlmService.Services.Interface;
 
 namespace MlmService.Api;
 

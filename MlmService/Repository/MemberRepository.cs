@@ -1,5 +1,5 @@
 ﻿using MlmService.Database;
-using MlmService.Database.CoreModels;
+using MlmService.Database.Models.Core;
 using MlmService.Dto.Member;
 using MlmService.Repository.Interface;
 
@@ -7,17 +7,17 @@ namespace MlmService.Repository;
 
 public class MemberRepository : IMemberRepository
 {
-    private readonly CoreContext _context;
+    private readonly TenantContext _tenantContext;
 
-    public MemberRepository(CoreContext context)
+    public MemberRepository(TenantContext tenantContext)
     {
-        _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<Guid> AddMemberAsync(Member member)
     {
-        await _context.Members.AddAsync(member);
-        await _context.SaveChangesAsync();
+        await _tenantContext.Members.AddAsync(member);
+        await _tenantContext.SaveChangesAsync();
 
         return member.Id;
     }
