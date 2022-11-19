@@ -19,9 +19,9 @@ public class PackageService : IPackageService
         _tenantContext = tenantContext;
     }
 
-    public async Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(PaginationFilter paged, FilterPackage filter)
+    public async Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(FilterPackage filter)
     {
-        if (paged.PageSize > 100)
+        if (filter.PageSize > 100)
             throw new PagedException("pagesize cannot more than 100.");
 
         var membershipQuery = _tenantContext.Packages.AsNoTracking().Where(e => !e.Deleted);
@@ -134,8 +134,8 @@ public class PackageService : IPackageService
         }
 
         var membershipDtoList = await membershipQuery
-            .Skip((paged.PageNumber - 1) * paged.PageSize)
-            .Take(paged.PageSize)
+            .Skip((filter.PageNumber - 1) * filter.PageSize)
+            .Take(filter.PageSize)
             .Select(e => new PackageDto
             {
                 Id = e.Id,
@@ -154,8 +154,8 @@ public class PackageService : IPackageService
 
         return new PagedResponse<List<PackageDto>>(
             membershipDtoList,
-            paged.PageNumber,
-            paged.PageSize,
+            filter.PageNumber,
+            filter.PageSize,
             totalRecords);
     }
 

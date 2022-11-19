@@ -13,34 +13,37 @@ public class TenantService : ITenantService
     private readonly HttpContext _httpContext;
     private readonly DbSettings _dbSettings;
 
-    private string ConnectionString { get; set; }
+    public string ConnectionString { get; set; }
+    public Guid TenantId { get; set; }
 
     public TenantService(IHttpContextAccessor contextAccessor, DbSettings dbSettings)
     {
         _dbSettings = dbSettings;
         _httpContext = contextAccessor.HttpContext;
+
+        TenantId = GetTenantId();
+        ConnectionString = GetConnectionString();
     }
 
-    public string GetConnectionString()
+    private string GetConnectionString()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-            return ConnectionString;
-
         string username = _httpContext.GetUsername();
-        if (string.IsNullOrWhiteSpace(username))
-            throw new Exception("Invalid Tenant!");
+        if(string.IsNullOrWhiteSpace(username))
+        {
+            return null;
+        }
 
         return _dbSettings.BaseConnection + username;
     }
 
-    public Guid GetTenantId()
+    private Guid GetTenantId()
     {
+        var tenantId = _httpContext.GetTenantId();
+        if(!tenantId.HasValue)
+        {
+            return Guid.Empty;
+        }
 
-        return _httpContext.GetTenantId();
-    }
-
-    public void SetConnectionString(string connectionString)
-    {
-        ConnectionString = connectionString;
+        return tenantId.Value;
     }
 }

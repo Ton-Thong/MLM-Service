@@ -17,8 +17,6 @@ using MlmService.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -121,7 +119,6 @@ builder.Services.AddSwaggerGen(e =>
 
 builder.Services.AddSwaggerGenNewtonsoftSupport();
 builder.Services.AddHealthChecks();
-builder.Services.AddOutputCache();
 
 builder.Services.AddCors(p => p.AddPolicy("corsapp", e =>
     e.SetIsOriginAllowed((_) => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
@@ -130,12 +127,6 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    //using (var scope = app.Services.CreateScope())
-    //{
-    //    var dataContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    //    await dataContext.Database.MigrateAsync();
-    //}
-
     app.UseSwagger();
     app.UseSwaggerUI();
 }

@@ -2,7 +2,6 @@
 
 public interface ITenantService
 {
-    public string GetConnectionString();
-    public Guid GetTenantId();
-    public void SetConnectionString(string connectionString);
+    public string ConnectionString { get; set; }
+    public Guid TenantId { get; set; }
 }

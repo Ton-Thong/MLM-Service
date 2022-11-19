@@ -5,5 +5,5 @@ namespace MlmService.Contracts;
 
 public interface IMemberService
 {
-    Task<Response<Guid>> AddMemberAsync(AddMemberDto m, Guid tenantId);
+    Task<Response<Guid>> AddMemberAsync(AddMemberDto m);
 }

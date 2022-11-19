@@ -16,31 +16,31 @@ namespace MlmService.Services;
 public class AuthService : IAuthService
 {
     private readonly JwtSettings _jwtSettings;
-    private readonly CoreContext _context;
+    private readonly DbSettings _dbSettings;
+    private readonly CoreContext _coreContext;
     private readonly TenantContext _tenantContext;
     private readonly ITenantService _tenantService;
-    private readonly DbSettings _dbSettings;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuthService(
         JwtSettings jwtSettings, 
+        DbSettings dbSettings, 
         CoreContext context, 
         TenantContext tenantContext,
         ITenantService tenantService,
-        DbSettings dbSettings, 
         IHttpContextAccessor httpContextAccessor)
     {
         _jwtSettings = jwtSettings;
-        _context = context;
+        _dbSettings = dbSettings;
+        _coreContext = context;
         _tenantContext = tenantContext;
         _tenantService = tenantService;
-        _dbSettings = dbSettings;
         _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<AuthenticationResult> RegisterAsync(string username, string password)
     {
-        var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(e => e.Username.ToLower().Trim() == username.ToLower().Trim());
+        var existingUser = await _coreContext.Users.AsNoTracking().FirstOrDefaultAsync(e => e.Username.ToLower().Trim() == username.ToLower().Trim());
         if (existingUser != null)
         {
             return new AuthenticationResult
@@ -69,8 +69,8 @@ public class AuthService : IAuthService
 
         try
         {
-            await _context.AddAsync(newUser);
-            await _context.SaveChangesAsync();
+            await _coreContext.AddAsync(newUser);
+            await _coreContext.SaveChangesAsync();
         }
         catch(Exception)
         {
@@ -80,7 +80,7 @@ public class AuthService : IAuthService
             };
         }
 
-        _tenantService.SetConnectionString(_dbSettings.BaseConnection + username);
+        _tenantService.ConnectionString = _dbSettings.BaseConnection + username;
         await _tenantContext.Database.MigrateAsync();
 
         return await GenerateAuthenticationResultForUserAsync(newUser, true);
@@ -88,7 +88,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthenticationResult> LoginAsync(string username, string password)
     {
-        var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(e => e.IsUsernameLogin && e.Username.ToLower().Trim() == username.ToLower().Trim());
+        var user = await _coreContext.Users.AsNoTracking().FirstOrDefaultAsync(e => e.IsUsernameLogin && e.Username.ToLower().Trim() == username.ToLower().Trim());
         if (user == null)
         {
             return new AuthenticationResult
@@ -131,7 +131,7 @@ public class AuthService : IAuthService
             };
         }
 
-        var user = await _context.Users.Include(e => e.RefreshTokens).FirstOrDefaultAsync(e => e.RefreshTokens.Any(x => x.Token == token));
+        var user = await _coreContext.Users.Include(e => e.RefreshTokens).FirstOrDefaultAsync(e => e.RefreshTokens.Any(x => x.Token == token));
         if (user == null)
         {
             return new AuthenticationResult
@@ -149,11 +149,11 @@ public class AuthService : IAuthService
             };
         }
 
-        var updateRefreshToken = await _context.RefreshTokens.FindAsync(refreshToken.Token);
+        var updateRefreshToken = await _coreContext.RefreshTokens.FindAsync(refreshToken.Token);
         if (updateRefreshToken != null)
         {
             updateRefreshToken.Used = true;
-            await _context.SaveChangesAsync();
+            await _coreContext.SaveChangesAsync();
         }
 
         return await GenerateAuthenticationResultForUserAsync(user, true);
@@ -253,8 +253,8 @@ public class AuthService : IAuthService
             ExpireDate = DateTime.UtcNow.AddMonths(6),
         };
 
-        await _context.RefreshTokens.AddAsync(refreshToken);
-        await _context.SaveChangesAsync();
+        await _coreContext.RefreshTokens.AddAsync(refreshToken);
+        await _coreContext.SaveChangesAsync();
 
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("jwt", refreshToken.Token, new CookieOptions
         {

@@ -15,7 +15,7 @@ public class MemberService : IMemberService
         _memberRepository = memberRepository;
     }
 
-    public async Task<Response<Guid>> AddMemberAsync(AddMemberDto m, Guid tenantId)
+    public async Task<Response<Guid>> AddMemberAsync(AddMemberDto m)
     {
         var member = new Member(
             code: Guid.NewGuid().ToString()[..6],
@@ -34,8 +34,7 @@ public class MemberService : IMemberService
             districtId: m.DistrictId,
             district: string.Empty,
             address: m.Address,
-            zipcode: m.Zipcode,
-            tenantId: tenantId
+            zipcode: m.Zipcode
         );
         
         var memberId = await _memberRepository.AddMemberAsync(member);

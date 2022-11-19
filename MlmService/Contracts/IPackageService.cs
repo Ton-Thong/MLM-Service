@@ -7,7 +7,7 @@ namespace MlmService.Contracts;
 
 public interface IPackageService
 {
-    Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(PaginationFilter paged, FilterPackage filter);
+    Task<PagedResponse<List<PackageDto>>> GetPackagesAsync(FilterPackage filter);
     Task<List<PackageForDropdownDto>> GetPackageForDropdownAsync();
     Task<Response<Guid>> CreatePackageAsync(PackageDto m);
     Task<Response<Guid>> UpdatePackageAsync(PackageDto m);

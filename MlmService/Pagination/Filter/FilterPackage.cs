@@ -2,7 +2,7 @@
 
 namespace MlmService.Pagination.Filter;
 
-public class FilterPackage
+public class FilterPackage : PaginationFilter
 {
     [JsonProperty("searchName")]
     public string? SearchName { get; set; }

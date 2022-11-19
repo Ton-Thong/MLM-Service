@@ -6,10 +6,8 @@ namespace MlmService.Database.Models.Core;
 
 public sealed class Member : BaseModel, IMustHaveTenant
 {
-    public Member(
-        string code, Prefix prefix, Gender gender, string name, DateOnly dateOfBirth, string phone, string email, string line, string facebook,
-        int? provinceId, string province, int? amphureId, string amphure, int? districtId, string district, string address, int? zipcode,
-        Guid tenantId)
+    public Member(string code, Prefix prefix, Gender gender, string name, DateOnly dateOfBirth, string phone, string email, string line, string facebook,
+        int? provinceId, string province, int? amphureId, string amphure, int? districtId, string district, string address, int? zipcode)
     {
         Id = Guid.NewGuid();
         Code = code;
@@ -30,7 +28,6 @@ public sealed class Member : BaseModel, IMustHaveTenant
         Address = address;
         Zipcode = zipcode;
         Approved = false;
-        TenantId = tenantId;
         CreatedDate = DateTime.UtcNow;
         UpdatedDate = DateTime.UtcNow;
     }

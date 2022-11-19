@@ -19,7 +19,7 @@ public class MemberApi : IEndpointRouteHandler
     private static async Task<IResult> AddMember(HttpRequest request, HttpContext context, IMemberService memberService)
     {
         var input = await request.ReadFromJsonAsync<AddMemberDto>();
-        var result = await memberService.AddMemberAsync(input, context.GetTenantId());
+        var result = await memberService.AddMemberAsync(input);
         return Results.Ok(result);
     }
 }

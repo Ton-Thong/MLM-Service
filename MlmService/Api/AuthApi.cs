@@ -15,7 +15,8 @@ public class AuthApi : IEndpointRouteHandler
         auth.MapGet("logout", Logout);
     }
     
-    private static async Task<IResult> Register(UserLoginRequest request, IAuthService authService) {
+    private static async Task<IResult> Register(UserLoginRequest request, IAuthService authService) 
+    {
         var response = await authService.RegisterAsync(request.Username, request.Password);
         if (!response.Success)
         {

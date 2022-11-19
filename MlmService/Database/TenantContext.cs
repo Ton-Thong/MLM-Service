@@ -8,7 +8,6 @@ namespace MlmService.Database;
 public class TenantContext : DbContext
 {
     private readonly ITenantService _tenantService;
-    private readonly Guid _tenantId;
 
     public TenantContext(DbContextOptions<TenantContext> options, ITenantService tenantService) : base(options) 
     {
@@ -22,16 +21,18 @@ public class TenantContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Package>().HasQueryFilter(a => a.TenantId == _tenantId && !a.Deleted);
-        modelBuilder.Entity<Member>().HasQueryFilter(a => a.TenantId == _tenantId);
+        modelBuilder.Entity<Package>()
+            .HasQueryFilter(a => a.TenantId == _tenantService.TenantId && !a.Deleted);
+
+        modelBuilder.Entity<Member>()
+            .HasQueryFilter(a => a.TenantId == _tenantService.TenantId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var tenantConnectionString = _tenantService.GetConnectionString();
-        if(!string.IsNullOrWhiteSpace(tenantConnectionString))
+        if(!string.IsNullOrWhiteSpace(_tenantService.ConnectionString))
         {
-            optionsBuilder.UseNpgsql(tenantConnectionString);
+            optionsBuilder.UseNpgsql(_tenantService.ConnectionString);
         }
     }
 
@@ -43,7 +44,7 @@ public class TenantContext : DbContext
             {
                 case EntityState.Added:
                 case EntityState.Modified:
-                    entry.Entity.TenantId = _tenantService.GetTenantId();
+                    entry.Entity.TenantId = _tenantService.TenantId;
                     break;
             }
         }

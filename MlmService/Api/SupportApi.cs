@@ -17,7 +17,7 @@ public class SupportApi : IEndpointRouteHandler
             .WithTags("Support")
             .RequireAuthorization();
 
-        support.MapGet("provinces",  GetProvinces).CacheOutput().Produces<ProvinceDto>();
+        support.MapGet("provinces",  GetProvinces).Produces<ProvinceDto>();
         support.MapGet("amphures", GetAmphures).Produces<AmphureDto>();
         support.MapGet("districts", GetDistricts).Produces<DistrictDto>();
     }

@@ -8,15 +8,25 @@ public static class ClaimExtensions
         return new Guid(id);
     }
 
-    public static Guid GetTenantId(this HttpContext httpContext)
+    public static Guid? GetTenantId(this HttpContext httpContext)
     {
-        var tenantId = httpContext.User.Claims.Single(e => e.Type == "tenantId").Value;
-        return new Guid(tenantId);
+        var tenantId = httpContext.User.Claims.FirstOrDefault(e => e.Type == "tenantId");
+        if(tenantId != null && !string.IsNullOrWhiteSpace(tenantId.Value))
+        {
+            return new Guid(tenantId.Value);
+        }
+
+        return null;
     }
 
     public static string GetUsername(this HttpContext httpContext)
     {
-        var sub =  httpContext.User.Claims.Single(e => e.Type == "user").Value;
-        return sub;
+        var user = httpContext.User.Claims.FirstOrDefault(e => e.Type == "user");
+        if(user != null && !string.IsNullOrWhiteSpace(user.Value))
+        {
+            return user.Value;
+        }
+
+        return null;
     }
 }
